@@ -1,0 +1,12 @@
+# |HITindex| threshold for calling terminal exons [0.0, 1.0]
+HITterminal	1.0
+# |HITindex| threshold for calling hybrid exons [0.0, 1.0]
+HIThybrid	0.3
+# bootstrapping p-value threshold for HITindex significance [0.0, 1.0]
+HITpval	1
+# confidence interval to use for HITindex significance (none, 0.75, 0.95, 0.95)
+HIT_CI	none
+# probability threshold for medium confidence with generative model [0.0, 1.0]
+prob_med	0.5
+# probability threshold for high confidence with generative model [0.0, 1.0]
+prob_high	0.8
