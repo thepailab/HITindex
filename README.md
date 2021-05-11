@@ -4,8 +4,8 @@
 
 The HITindex is a pipeline to classify hybrid, internal, or terminal exons from RNA-seq data by modeling ratios of splice junction coverage. The pipeline involves two major scripts, which can be run independently:
 
-1. HITindex_annotate: Annotate metaexons from a gtf file by collapsing overlapping consituent exons. This step includes (a) annotating how often a constituent exon is used as a first, internal, or last exon in annotated isoforms, (b) saving the coordinates of each constituent exons, and (c) adding buffer regions in which to associate junction reads with an exon.
-2. HITindex_classify: Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. This step includes (a) calculating the HITindex and generative model metrics, (b) flagging exons likely affected by edge effects, (c) classifying exons, and (d) calculating PSI values for alternative first and last exon usage.
+1. HITindex_annotate: Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
+2. HITindex_classify: Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
 ![HITindex_image]()
 
@@ -18,3 +18,26 @@ version used for development indicated in parentheses:
 - pybedtools (v)
 - pandas (v)
 - pymc3 (v)
+
+## Table of contents
+[Overview of HITindex](#overview)
+
+[Exon Classification](#classification)
+
+[Alternative First and Last Exon usage](#psi)
+
+[Sample Tutorial](#tutorial)
+
+## Overview of HITindex
+
+### HITindex_annotate
+Annotate metaexons from a gtf file by collapsing overlapping consituent exons. This step includes (a) annotating how often a constituent exon is used as a first, internal, or last exon in annotated isoforms, (b) saving the coordinates of each constituent exons, and (c) adding buffer regions in which to associate junction reads with an exon.
+
+### HITindex_classify
+Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. This step includes (a) calculating the HITindex and generative model metrics, (b) flagging exons likely affected by edge effects, (c) classifying exons, and (d) calculating PSI values for alternative first and last exon usage.
+
+## Exon Classification
+
+## Alternative First and Last Exon Usage
+
+
