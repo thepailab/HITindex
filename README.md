@@ -135,7 +135,7 @@ STAR --outFilterType BySJout --outFilterMultimapNmax 20 --alignSJoverhangMin 8 -
 samtools index [bamfile].bam
 ```
 
-### Identify & Annotate metaexons (Step 1)
+### Step 1: Identify & Annotate metaexons
 
 This step takes in an annotation file (gtf file) and outputs a bed file of metaexons after collapsing and annotating overlapping exons.
 
@@ -207,7 +207,7 @@ python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sa
                             --outname output   
 ```
 
-#### Extracting Junction Reads (Step 2)
+#### Step 2: Extracting Junction Reads
 
 Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type and strandedness of the reads: </br>
 (1) Read type can be changed with ```--readtype``` with option {single or paired}, default: paired </br>
@@ -224,15 +224,15 @@ To only extract junction reads and run different iterations of the exon classifi
 python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand 
 ```
 
-#### Exon Classification (Step 3)
+#### Step 3: Exon Classification
 - overlap figure
 - minimum read num
 - bootstrapping
 
-#### Exon Quantification (Step 4)
+#### Step 4: Exon Quantification
 - edge effect
 
-## Exon Classification
+## Fine-tuning Exon Classifications
 
 - how to run just this
 - rerunning after running previous steps
