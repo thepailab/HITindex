@@ -78,7 +78,7 @@ optional arguments:
   --HITindex            Calculate HITindex (default: False)
   --identifyTerminal    Identify terminal, hybrid, and internal exons (default: False)
   --calculatePSI        Calculate PSI values (default: False)
-  --outname output      name of file(s) for final metric. (default: None)
+  --outname             name of file(s) for final metric. required for everything except --junctionReads. (default: None)
 
 read information:
   --bam                 original bam from which to extract junction reads. required if
@@ -209,13 +209,20 @@ python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sa
 
 #### Extracting Junction Reads (Step 2)
 
-Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type (single or paired end reads) and the strandedness of the reads, which is determined by library type used. We borrow the library strandedness naming convention from Tophat/Bowtie:
+Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type and strandedness of the reads.
+(1) Read type can be changed with ```--readtype``` with option {single or paired}, default: paired
+(2) Strandedness of the reads can be changed with ```--readstrand``` with options {fr-firststrand, fr-secondstrand, fr-unstrand}, default: fr-firststrand 
+
+Strandedness is determined by the type of library preparation protocol. We borrow the library strandedness naming convention from Tophat/Bowtie:
 
 <p align="center">
 <img src="./readme/readStrand.png" width="50%" height="50%">
 </p>
 
-- how to run just junction reads
+To only extract junction reads and run different iterations of the exon classification step:
+```
+python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand 
+```
 
 #### Exon Classification (Step 3)
 - overlap figure
