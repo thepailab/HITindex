@@ -4,12 +4,8 @@
 
 The HITindex is a pipeline to classify hybrid, internal, or terminal exons from RNA-seq data by modeling ratios of splice junction coverage. The pipeline involves two major scripts, which can be run independently:
 
-1. HITindex_annotate (Step 1): Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
-2. HITindex_classify (Steps 2-4): Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
-
-<p align="center">
-<img src="./readme/HITindex_overview.png" width="80%" height="80%">
-</p>
+1. HITindex_annotate: Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
+2. HITindex_classify: Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
 ### Requirements 
 
@@ -37,6 +33,10 @@ The HITindex is a pipeline to classify hybrid, internal, or terminal exons from 
 ## Overview of HITindex
 
 The HITindex was designed to be run on bam files containing mapped reads. Here, we describe the usage of the two main steps of the HITindex pipeline. Below, we provide sections that discuss alternative parameter usage for classification and quantification, as well as a tutorial walking through all the steps necessary to run the HITindex.
+
+<p align="center">
+<img src="./readme/HITindex_overview.png" width="80%" height="80%">
+</p>
 
 ### HITindex_annotate
 Annotate metaexons from a gtf file by collapsing overlapping consituent exons. This step includes (a) annotating how often a constituent exon is used as a first, internal, or last exon in annotated isoforms, (b) saving the coordinates of each constituent exons, and (c) adding buffer regions in which to associate junction reads with an exon.
@@ -67,10 +67,10 @@ Output:
 Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. This step includes (a) calculating the HITindex and generative model metrics, (b) flagging exons likely affected by edge effects, (c) classifying exons, and (d) calculating PSI values for alternative first and last exon usage.
 
 ```
-usage: HITindex [-h] [--junctionReads] [--HITindex] [--identifyTerminal] [--calculatePSI] 
-                      --outname output [--bam] [--juncbam] [--readtype {single,paired}]
-                     [--readstrand {fr-unstrand,fr-firststrand,fr-secondstrand}] [--bed] [--overlap]
-                     [--readnum] [--bootstrap] [--metrics] [--parameters] [--metricsID] [--edge]
+usage: HITindex_classify.py [-h] [--junctionReads] [--HITindex] [--identifyTerminal] [--calculatePSI] 
+                                  --outname output [--bam] [--juncbam] [--readtype {single,paired}]
+                                 [--readstrand {fr-unstrand,fr-firststrand,fr-secondstrand}] [--bed] [--overlap]
+                                 [--readnum] [--bootstrap] [--metrics] [--parameters] [--metricsID] [--edge]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -199,7 +199,13 @@ xxx
 
 ### Classify & Quantitate Exons
 
-- full script running
+Example usage using default parameters:
+```
+python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam 
+                            --HITindex --bed metaexon.bed 
+                            --identifyTerminal --calculatePSI 
+                            --outname output   
+```
 
 #### Extracting Junction Reads (Step 2)
 
