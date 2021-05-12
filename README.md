@@ -7,7 +7,7 @@ The HITindex is a pipeline to classify hybrid, internal, or terminal exons from 
 1. HITindex_annotate (Step 1): Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
 2. HITindex_classify (Steps 2-4): Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
-![HITindex_image](./readme/HITindex_overview.png)
+![HITindex_overview](./readme/HITindex_overview.png)
 
 ### Requirements 
 
@@ -143,7 +143,8 @@ python HITindex_annotate.py --gtf annotations.gtf --ss3buffer 50 --ss5buffer 20 
 ```
 
 **Types of GTF files**
-(1) Exons in gtf are sorted by genome coordinates (default)
+
+(1) Exons in gtf are sorted by genome coordinates (default):
 
 ```
 1       havana  gene    11869   14409   .       +       .       gene_id "ENSG00000223972"; gene_name "DDX11L1"; 
@@ -158,7 +159,7 @@ python HITindex_annotate.py --gtf annotations.gtf --ss3buffer 50 --ss5buffer 20 
 1       havana  exon    35721   36081   .       -       .       gene_id "ENSG00000237613"; transcript_id "ENST00000417324"; exon_number "1"; gene_name "FAM138A";
 ```
 
-(2) Exons in gtf are sorted by transcriptional direction (use ```--reverse```)
+(2) Exons in gtf are sorted by transcriptional direction (use ```--reverse```):
 
 ```
 1       havana  gene    11869   14409   .       +       .       gene_id "ENSG00000223972"; gene_name "DDX11L1"; 
@@ -172,23 +173,34 @@ python HITindex_annotate.py --gtf annotations.gtf --ss3buffer 50 --ss5buffer 20 
 1       havana  exon    35277   35481   .       -       .       gene_id "ENSG00000237613"; transcript_id "ENST00000417324"; exon_number "2"; gene_name "FAM138A";
 1       havana  exon    34554   35174   .       -       .       gene_id "ENSG00000237613"; transcript_id "ENST00000417324"; exon_number "3"; gene_name "FAM138A";
 ```
-
 
 **Buffer regions around metaexons**
 
-- figure showing what buffers are and recommended distances
+Users can chose to add a buffer region around metaexon boundaries within which to associate junction reads to a particular metaexon. This is meant to account for some flexibility in TSS and TES definitions, which are often hard to precisely define and thus less likely to be precise at the single nucleotide level in annotation sets. While the default is set to 0nt for both the 5' and 3' buffer regions, we suggest 50nt buffer at the 5' end and 20nt buffer at the 3' end:
 
-**Example Output**
+![bufferRegions_image](./readme/bufferRegions.png)
 
-- figure of what first, internal, last #s mean
-- example output: with constituent exons included
+**Metaexon annotations**
+
+Two bed files are output, one with precise metaexon boundaries and the second with boundaries defined by the user-defined buffer regions. Both include additional information in the 4th column, including (1) the constitutent overlapping exons that were combined to create the metaexon and (2) how many times constituent exons are first, internal, or last exons within annotated isoforms from the gtf file, as shown here:
+
+![Annotations_image](./readme/annotations.png)
+
+Example output:
+```
+xxx
+```
 
 ### Classify & Quantitate Exons
 
 - full script running
 
 #### Extracting Junction Reads (Step 2)
-- figure of read strand definition
+
+Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type (single or paired end reads) and the strandedness of the reads, which is determined by library type used. We borrow the library strandedness naming convention from Tophat/Bowtie:
+
+![readStrand_image](./readme/readStrand.png)
+
 - how to run just junction reads
 
 #### Exon Classification (Step 3)
