@@ -4,8 +4,8 @@
 
 The HITindex is a pipeline to classify hybrid, internal, or terminal exons from RNA-seq data by modeling ratios of splice junction coverage. The pipeline involves two major scripts, which can be run independently:
 
-1. HITindex_annotate: Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
-2. HITindex_classify: Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
+1. HITindex_annotate (Step 1): Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
+2. HITindex_classify (Steps 2-4): Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
 ![HITindex_image](./readme/HITindex_overview.png)
 
