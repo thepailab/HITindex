@@ -209,10 +209,8 @@ python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sa
 
 #### Extracting Junction Reads (Step 2)
 
-Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type and strandedness of the reads.
-
-(1) Read type can be changed with ```--readtype``` with option {single or paired}, default: paired
-
+Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type and strandedness of the reads. </br>
+(1) Read type can be changed with ```--readtype``` with option {single or paired}, default: paired </br>
 (2) Strandedness of the reads can be changed with ```--readstrand``` with options {fr-firststrand, fr-secondstrand, fr-unstrand}, default: fr-firststrand 
 
 Strandedness is determined by the type of library preparation protocol. We borrow the library strandedness naming convention from Tophat/Bowtie:
