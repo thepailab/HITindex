@@ -140,22 +140,20 @@ samtools index [bamfile].bam
 - figure of what first, internal, last #s mean
 - example output: with constituent exons included
 
-### Classify & Quantitate Exons (Step 2 - 4)
+### Classify & Quantitate Exons
 
 - full script running
-- for more informaton on exon classification parameters, go to
-- for more information on PSI parameters, go to
 
-#### Extracting Junction Reads
+#### Extracting Junction Reads (Step 2)
 - figure of read strand definition
 - how to run just junction reads
 
-#### Exon Classification
+#### Exon Classification (Step 3)
 - overlap figure
 - minimum read num
 - bootstrapping
 
-#### Exon Quantification
+#### Exon Quantification (Step 4)
 - edge effect
 
 ## Exon Classification
@@ -166,5 +164,5 @@ samtools index [bamfile].bam
 ## Alternative First and Last Exon Usage
 
 - how to run just this
-- rerunning after runnign previous steps
+- rerunning after running previous steps
 - edge effects figure, meaning
