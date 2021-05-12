@@ -8,6 +8,7 @@ The HITindex is a pipeline to classify hybrid, internal, or terminal exons from 
 2. HITindex_classify (Steps 2-4): Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
 ![HITindex_overview](./readme/HITindex_overview.png)
+<img src="./readme/HITindex_overview.png" width="75%" height="75%">
 
 ### Requirements 
 
