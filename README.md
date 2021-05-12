@@ -120,8 +120,51 @@ psi:
 
 ## Tutorial on running HITindex
 
+make figure: steps (inputs + outputs) in bubble form
+
+### Step 0: Genome Alignment
+
+Align raw reads in fastq format to the genome with your favorite splicing-aware mapper (ie. STAR | hisat2) to obtain a sorted, indexed bam file. When building a STAR index or running hisat2, we recommend using the same gtf annotation that you will use for downstream steps.
+
+For instance, to map with STAR (using ENCODE parameters) and index the bam:
+```
+STAR --outFilterType BySJout --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.04 --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outSAMtype BAM SortedByCoordinate
+samtools index [bamfile].bam
+```
+
+### Identify & Annotate metaexons (Step 1)
+
+- from gtf file
+- example of both types of gtf files (genome or transcriptional direction)
+- figure showing what buffers are and recommended distances
+- figure of what first, internal, last #s mean
+- example output: with constituent exons included
+
+### Classify & Quantitate Exons (Step 2 - 4)
+
+- full script running
+- for more informaton on exon classification parameters, go to
+- for more information on PSI parameters, go to
+
+#### Extracting Junction Reads
+- figure of read strand definition
+- how to run just junction reads
+
+#### Exon Classification
+- overlap figure
+- minimum read num
+- bootstrapping
+
+#### Exon Quantification
+- edge effect
+
 ## Exon Classification
+
+- how to run just this
+- rerunning after running previous steps
 
 ## Alternative First and Last Exon Usage
 
-
+- how to run just this
+- rerunning after runnign previous steps
+- edge effects figure, meaning
