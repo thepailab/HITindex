@@ -7,7 +7,7 @@ The HITindex is a pipeline to classify hybrid, internal, or terminal exons from 
 1. HITindex_annotate: Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
 2. HITindex_classify: Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
-![HITindex_image]()
+![HITindex_image](./readme/HITindex_overview.png)
 
 ### Requirements 
 
