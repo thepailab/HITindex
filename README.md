@@ -181,7 +181,7 @@ python HITindex_annotate.py --gtf annotations.gtf --ss3buffer 50 --ss5buffer 20 
 Users can chose to add a buffer region around metaexon boundaries within which to associate junction reads to a particular metaexon. This is meant to account for some flexibility in TSS and TES definitions, which are often hard to precisely define and thus less likely to be precise at the single nucleotide level in annotation sets. While the default is set to 0nt for both the 5' and 3' buffer regions, we suggest 50nt buffer at the 5' end and 20nt buffer at the 3' end:
 
 <p align="center">
-<img src="./readme/bufferRegions.png" width="75%" height="75%">
+<img src="./readme/bufferRegions.png" width="50%" height="50%">
 </p>
 
 **Metaexon annotations**
@@ -205,10 +205,8 @@ xxx
 
 Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type (single or paired end reads) and the strandedness of the reads, which is determined by library type used. We borrow the library strandedness naming convention from Tophat/Bowtie:
 
-![readStrand_image](./readme/readStrand.png)
-
 <p align="center">
-<img src="./readme/readStrand.png" width="70%" height="70%">
+<img src="./readme/readStrand.png" width="50%" height="50%">
 </p>
 
 - how to run just junction reads
