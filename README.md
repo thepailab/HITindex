@@ -178,7 +178,7 @@ python HITindex_annotate.py --gtf annotations.gtf --ss3buffer 50 --ss5buffer 20 
 
 **Buffer regions around metaexons**
 
-Users can chose to add a buffer region around metaexon boundaries within which to associate junction reads to a particular metaexon. This is meant to account for some flexibility in TSS and TES definitions, which are often hard to precisely define and thus less likely to be precise at the single nucleotide level in annotation sets. While the default is set to 0nt for both the 5' and 3' buffer regions, we suggest 50nt buffer at the 5' end and 20nt buffer at the 3' end:
+Users can chose to add a buffer region around metaexon boundaries within which to associate junction reads to a particular metaexon. This is meant to account for some flexibility in TSS and TES definitions, which are often hard to precisely define and thus less likely to be precise at the single nucleotide level in annotation sets. While the default is set to 0nt for both the 5' and 3' buffer regions, we suggest using ```--ss5buffer 50``` for a 50nt buffer at the 5' end and ```--ss3buffer 20``` for a 20nt buffer at the 3' end:
 
 <p align="center">
 <img src="./readme/bufferRegions.png" width="50%" height="50%">
