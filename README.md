@@ -57,7 +57,7 @@ Parameters:
                         reads. suggested = 20nt. (default: 0)
 
 Output:
-  --outfile output  name for output bed with merged/annotated exons (default: None)
+  --outfile output      name for output bed with merged/annotated exons (default: None)
 ```
 
 ### HITindex_classify
