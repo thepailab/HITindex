@@ -244,7 +244,7 @@ Strandedness is determined by the type of library preparation protocol. We borro
 
 This step results in bam files containing only the junction reads, named using ```--juncbam```. These junction bam files can be specified in later steps, without needing to re-run ```--junctionReads``` to extract junction reads again.
 
-### Step 3: Calculating HITindex metrics
+#### Step 3: Calculating HITindex metrics
 
 To only calculate HITindex metrics and run the generative model:
 ```
