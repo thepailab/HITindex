@@ -136,7 +136,6 @@ make figure: steps (inputs + outputs) in bubble form
 
 ### Step 0: Genome Alignment
 
-
 Align raw reads in fastq format to the genome with your favorite splicing-aware mapper (ie. STAR | hisat2) to obtain a sorted, indexed bam file. When building a STAR index or running hisat2, we recommend using the same gtf annotation that you will use for downstream steps.
 
 For instance, to map with STAR (using ENCODE parameters) and index the bam:
@@ -223,7 +222,7 @@ python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sa
                             --outname sampleHITindex   
 ```
 
-#### Step 2: Extracting Junction Reads
+### Step 2: Extracting Junction Reads
 
 To only extract junction reads:
 ```
@@ -244,7 +243,7 @@ Strandedness is determined by the type of library preparation protocol. We borro
 
 This step results in bam files containing only the junction reads, named using ```--juncbam```. These junction bam files can be specified in later steps, without needing to re-run ```--junctionReads``` to extract junction reads again.
 
-#### Step 3: Calculating HITindex metrics
+### Step 3: Calculating HITindex metrics
 
 To only calculate HITindex metrics and run the generative model:
 ```
@@ -260,9 +259,11 @@ Junction reads are assigned to metaexons based on their overlap with the upstrea
 The HITindex and generative model probabilities are calculated for metaexons that have a minimum number of reads as determined by ```--readnum```, with a default of 2 reads. For datasets with sufficient coverage, we recommend using at least 5 reads.
 
 **Bootstrapping**
+
 Bootstrapping is used to calculate two different statistical metrics related to the HITindex metric. The number of bootstrap iterations used is determined by ```--bootstrap```, with a default of 1000 runs. This is the rate-limiting step for the HITindex pipeline, so we recommend running this step once and then using the output to fine-tune exon classification and PSI quantification. Reducing the bootstrap n will increase speed, but decrease statistical confidence.
 
 **Output**
+
 This step results in a ```.exon``` file with the following columns:
 
 | Column Name | Description |
@@ -286,7 +287,7 @@ This step results in a ```.exon``` file with the following columns:
 | downstream_fraction | |
 | FIL_postmean | |
 
-#### Step 4: Exon Classification
+### Step 4: Exon Classification
 
 To only classify exons:
 ```
@@ -312,13 +313,14 @@ prob_high	0.8
 ```
 
 **Output**
+
 This step adds two columns to the existing ```.exon``` file: </br>
 (1) ID, the exon-type classification </br>
 (2) ID_position, the exon-type classification after accounting for potential edge effect exons
 
 Users can run this step multiple times with varying thresholds, but since the original file is modified, we suggest duplicating the ```.exon``` file for each set of thresholds and then specifying the new ```.exon``` files with ```--metrics```. 
 
-#### Step 5: Exon Quantification
+### Step 5: Exon Quantification
 
 To only calculate PSI values:
 ```
@@ -328,6 +330,7 @@ python HITindex_classify.py --calculatePSI  --metricsID sampleHITindex.exon --ed
 Percent spliced in (PSI) values are used to quantify relative alternative terminal exon usage. Exons classified as "first", "FirstInternal_medium" or "FirstInternal_high" are used to calculate alternative first exon (AFE) PSI values, while exons classified as “last”, “InternalLast_medium” or “InternalLast_high” are used to calculate PSI values for alternative last exon (ALE) usage. If the user includes the ```--edge``` flag, exons flagged as potentially being affected by edge-effects in the ```ID_position``` column of the ```.exon``` file are not included in the PSI value calculations. Since this step uses the exon classifications in the previous step, it must be run on an ```.exon``` file that has the ```ID``` and ```ID_position``` columns. 
 
 **Output**
+
 This step results in ```.AFEPSI``` and ```.ALEPSI``` files with the following columns:
 
 | Column Name | Description |
