@@ -7,19 +7,19 @@ The HITindex is a pipeline to classify hybrid, internal, or terminal exons from 
 1. HITindex_annotate: Annotate metaexons from a gtf file by collapsing overlapping consituent exons. 
 2. HITindex_classify: Calculate HIT index metrics and classify metaexons into one of 5 exon-types: first, first-internal, internal, internal-last, and last exons. 
 
-### Requirements 
+### Requirements (versions used for development)
 
-- samtools
-- bedtools
-- python (v3.6+)
+- samtools (v1.3)
+- bedtools (v2.26.0)
+- python (v3.6.3)
 
 #### Python Dependencies
-- scipy (v)
-- numpy (v)
-- pysam (v)
-- pybedtools (v)
-- pandas (v)
-- pymc3 (v)
+- scipy (v1.5.2)
+- numpy (v1.19.2)
+- pysam (v0.16)
+- pybedtools (v0.8.1)
+- pandas (v0.25.3)
+- pymc3 (v3.9.3)
 
 ## Table of contents
 [Overview of HITindex](#overview-of-hitindex)
@@ -119,7 +119,7 @@ psi:
 
 ## Detailed Tutorial to run the HITindex
 
-make figure: steps (inputs + outputs) in bubble form
+In this tutorial, we walk through all the steps to run the HITindex pipeline, in the minimum number of command lines and each step individually. For each step, we discuss the possible parameters that can be changed, how to do so, and the considerations involved in each of the parameters. Finally, we show example inputs and outputs of each step (with column explanations) so the user knows what to expect and can make custom files as needed.
 
 ### Jump to a step:
 [Step 0: Genome Alignment](#step-0-genome-alignment)
@@ -207,9 +207,34 @@ The first two bed files include additional information in the 4th column about h
 <img src="./readme/annotations.png" width="75%" height="75%">
 </p>
 
-Example output:
+Example metaexon bed output:
 ```
-xxx
+chr16   15703135        15704123        chr16:15703135-15704123;ENSG00000133392;TXPT:12;FE:0;internal:0;LE:6;singleexon:0       0       -
+chr16   15708803        15708841        chr16:15708803-15708841;ENSG00000133392;TXPT:12;FE:0;internal:4;LE:0;singleexon:0       0       -
+chr16   15711113        15711270        chr16:15711113-15711270;ENSG00000133392;TXPT:12;FE:1;internal:0;LE:0;singleexon:0       0       -
+chr16   15712890        15715081        chr16:15712890-15715081;ENSG00000133392;TXPT:12;FE:0;internal:5;LE:2;singleexon:0       0       -
+chr16   15715164        15715272        chr16:15715164-15715272;ENSG00000133392;TXPT:12;FE:0;internal:7;LE:0;singleexon:0       0       -
+chr16   15717140        15719308        chr16:15717140-15719308;ENSG00000133392;TXPT:12;FE:0;internal:19;LE:0;singleexon:0      0       -
+```
+
+Example buffer bed output (```--ss3buffer 20``` & ```--ss5buffer 50```:
+```
+chr16   15703115        15704173        chr16:15703135-15704123;ENSG00000133392;TXPT:12;FE:0;internal:0;LE:6;singleexon:0       0       -
+chr16   15708783        15708891        chr16:15708803-15708841;ENSG00000133392;TXPT:12;FE:0;internal:4;LE:0;singleexon:0       0       -
+chr16   15711093        15711320        chr16:15711113-15711270;ENSG00000133392;TXPT:12;FE:1;internal:0;LE:0;singleexon:0       0       -
+chr16   15712870        15715131        chr16:15712890-15715081;ENSG00000133392;TXPT:12;FE:0;internal:5;LE:2;singleexon:0       0       -
+chr16   15715144        15715322        chr16:15715164-15715272;ENSG00000133392;TXPT:12;FE:0;internal:7;LE:0;singleexon:0       0       -
+chr16   15717120        15719358        chr16:15717140-15719308;ENSG00000133392;TXPT:12;FE:0;internal:19;LE:0;singleexon:0      0       -
+```
+
+Example constituent bed output:
+```
+chr16	15703135	15704123	chr16:15703135-15704123;ENSG00000133392;TXPT:12;15703135-15704123,15703172-15704123,15703172-15704123,15703741-15704123,15703787-15704123,15703991-15704123	-
+chr16	15708803	15708841	chr16:15708803-15708841;ENSG00000133392;TXPT:12;15708803-15708836,15708803-15708841,15708803-15708841,15708838-15708841	0	-
+chr16	15711113	15711270	chr16:15711113-15711270;ENSG00000133392;TXPT:12;15711113-15711270	0	-
+chr16	15712890	15715081	chr16:15712890-15715081;ENSG00000133392;TXPT:12;15712890-15715081,15712896-15715081,15714909-15715081,15714909-15715081,15714909-15715081,15714909-15715081,15714909-15715081	0	-
+chr16	15715164	15715272	chr16:15715164-15715272;ENSG00000133392;TXPT:12;15715164-15715272,15715164-15715272,15715164-15715272,15715164-15715272,15715164-15715272,15715164-15715272,15715164-15715272	0	-
+chr16	15717140	15719308	chr16:15717140-15719308;ENSG00000133392;TXPT:12;15717140-15719308,15717140-15717348,15717140-15717348,15717140-15717348,15717140-15717348,15717140-15717348,15717140-15717348,15718315-15718438,15718315-15718438,15718315-15718438,15718315-15718438,15718315-15718438,15718315-15718438,15719220-15719308,15719220-15719308,15719220-15719308,15719220-15719308,15719220-15719308,15719220-15719308	0	-
 ```
 
 ### Classify and Quantitate Exons
