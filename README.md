@@ -345,4 +345,4 @@ This step results in ```.AFEPSI``` and ```.ALEPSI``` files with the following co
 | sumR-L or sumL-R | sum of all read biases across all alternative exons |
 | AFEPSI or ALEPSI | PSI value for metaexon |
 
-Users can run this step multiple times by using the ```--metricsID``` to specify different ```.exon``` files or varying the ```--edge``` flag, but make sure to change the ```--outname``` for each of these runs. 
+Users can run this step multiple times by using the ```--metricsID``` to specify different ```.exon``` files or varying the ```--edge``` flag, but should make sure to change the ```--outname``` for each of these runs. 
