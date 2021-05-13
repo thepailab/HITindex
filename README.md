@@ -215,15 +215,20 @@ xxx
 
 ### Classify and Quantitate Exons
 
-Example usage using default parameters:
+Example usage using default parameters to run all 4 steps in tandem:
 ```
 python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam 
-                            --HITindex --bed metaexon.bed 
+                            --HITindex --bed metaexon.bed_ss3-20ss5-50.buffer 
                             --classify --calculatePSI 
                             --outname sampleHITindex   
 ```
 
 #### Step 2: Extracting Junction Reads
+
+To only extract junction reads:
+```
+python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand 
+```
 
 Junction reads are extracted by parsing the CIGAR strings of mapped reads. To correctly assign junction reads the user needs to provide information about read type and strandedness of the reads: </br>
 (1) Read type can be changed with ```--readtype``` with option {single or paired}, default: paired </br>
@@ -235,14 +240,16 @@ Strandedness is determined by the type of library preparation protocol. We borro
 <img src="./readme/readStrand.png" width="50%" height="50%">
 </p>
 
-To only extract junction reads:
-```
-python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand 
-```
+**Output**
 
 This step results in bam files containing only the junction reads, named using ```--juncbam```. These junction bam files can be specified in later steps, without needing to re-run ```--junctionReads``` to extract junction reads again.
 
 ### Step 3: Calculating HITindex metrics
+
+To only calculate HITindex metrics and run the generative model:
+```
+python HITindex_classify.py --HITindex --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand --bed metaexon.bed_ss3-20ss5-50.buffer  --overlap 10 --readnum 5 --bootstrap 1000 --outname sampleHITindex
+```
 
 Junction reads are assigned to metaexons based on their overlap with the upstream or downstream boundaries of the metaexon. Note that the junction site does not need to be directly aligned with the exact metaexon boundary coordinates and junction reads are counted regardless of the identity of the connected exon. The minimum overlap length for junction reads is determined by ```--overlap```, with a default of 10nt. 
 
@@ -255,11 +262,7 @@ The HITindex and generative model probabilities are calculated for metaexons tha
 **Bootstrapping**
 Bootstrapping is used to calculate two different statistical metrics related to the HITindex metric. The number of bootstrap iterations used is determined by ```--bootstrap```, with a default of 1000 runs. This is the rate-limiting step for the HITindex pipeline, so we recommend running this step once and then using the output to fine-tune exon classification and PSI quantification. Reducing the bootstrap n will increase speed, but decrease statistical confidence.
 
-To only calculate HITindex metrics and run the generative model:
-```
-python HITindex_classify.py --HITindex --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand --bed metaexon.bed --overlap 10 --readnum 5 --bootstrap 1000 --outname sampleHITindex
-```
-
+**Output**
 This step results in a ```.exon``` file with the following columns:
 
 | Column Name | Description |
@@ -285,6 +288,11 @@ This step results in a ```.exon``` file with the following columns:
 
 #### Step 4: Exon Classification
 
+To only classify exons:
+```
+python HITindex_classify.py --classify  --metrics sampleHITindex.exon --paramters HIT_identity_parameters.txt
+```
+
 Exons are classified using the ```.exon``` file output from the last step and the included ```HIT_identity_parameters.txt``` file (reproduced below), which defines the thresholds used across the HITindex metric, statistical confidence metrics, and posterior probabilities from the generative model that are used to classify exons. Users can change these thresholds by changing the values in the ```HIT_identify_parameters.txt``` or create custom files with the same format. Custom files can be specified using ```--parameters```.
 
 HIT_identity_parameters file:
@@ -303,11 +311,7 @@ prob_med	0.5
 prob_high	0.8
 ```
 
-To only classify exons:
-```
-python HITindex_classify.py --classify  --metrics sampleHITindex.exon --paramters HIT_identity_parameters.txt
-```
-
+**Output**
 This step adds two columns to the existing ```.exon``` file: </br>
 (1) ID, the exon-type classification </br>
 (2) ID_position, the exon-type classification after accounting for potential edge effect exons
@@ -316,13 +320,14 @@ Users can run this step multiple times with varying thresholds, but since the or
 
 #### Step 5: Exon Quantification
 
-Percent spliced in (PSI) values are used to quantify relative alternative terminal exon usage. Exons classified as "first", "FirstInternal_medium" or "FirstInternal_high" are used to calculate alternative first exon (AFE) PSI values, while exons classified as “last”, “InternalLast_medium” or “InternalLast_high” are used to calculate PSI values for alternative last exon (ALE) usage. If the user includes the ```--edge``` flag, exons flagged as potentially being affected by edge-effects in the ```ID_position``` column of the ```.exon``` file are not included in the PSI value calculations. Since this step uses the exon classifications in the previous step, it must be run on an ```.exon``` file that has the ```ID``` and ```ID_position``` columns. 
-
 To only calculate PSI values:
 ```
 python HITindex_classify.py --calculatePSI  --metricsID sampleHITindex.exon --edge --outname sampleHITindex
 ```
 
+Percent spliced in (PSI) values are used to quantify relative alternative terminal exon usage. Exons classified as "first", "FirstInternal_medium" or "FirstInternal_high" are used to calculate alternative first exon (AFE) PSI values, while exons classified as “last”, “InternalLast_medium” or “InternalLast_high” are used to calculate PSI values for alternative last exon (ALE) usage. If the user includes the ```--edge``` flag, exons flagged as potentially being affected by edge-effects in the ```ID_position``` column of the ```.exon``` file are not included in the PSI value calculations. Since this step uses the exon classifications in the previous step, it must be run on an ```.exon``` file that has the ```ID``` and ```ID_position``` columns. 
+
+**Output**
 This step results in ```.AFEPSI``` and ```.ALEPSI``` files with the following columns:
 
 | Column Name | Description |
@@ -338,4 +343,3 @@ This step results in ```.AFEPSI``` and ```.ALEPSI``` files with the following co
 | AFEPSI or ALEPSI | PSI value for metaexon |
 
 Users can run this step multiple times by using the ```--metricsID``` to specify different ```.exon``` files or varying the ```--edge``` flag, but make sure to change the ```--outname``` for each of these runs. 
-
