@@ -204,7 +204,7 @@ Example usage using default parameters:
 python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam 
                             --HITindex --bed metaexon.bed 
                             --identifyTerminal --calculatePSI 
-                            --outname output   
+                            --outname sampleHITindex   
 ```
 
 #### Step 2: Extracting Junction Reads
@@ -219,17 +219,63 @@ Strandedness is determined by the type of library preparation protocol. We borro
 <img src="./readme/readStrand.png" width="50%" height="50%">
 </p>
 
-To only extract junction reads and run different iterations of the exon classification step:
+To only extract junction reads:
 ```
 python HITindex_classify.py --junctionReads --bam sample.sorted.bam --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand 
 ```
 
-#### Step 3: Exon Classification
-- overlap figure
-- minimum read num
-- bootstrapping
+This step results in bam files containing only the junction reads, named using ```--juncbam```. These junction bam files can be specified in later steps, without needing to re-run ```--junctionReads``` to extract junction reads again.
 
-#### Step 4: Exon Quantification
+### Step 3: Calculating HITindex metrics
+
+Junction reads are assigned to metaexons based on their overlap with the upstream or downstream boundaries of the metaexon. Note that the junction site does not need to be directly aligned with the exact metaexon boundary coordinates and junction reads are counted regardless of the identity of the connected exon. The minimum overlap length for junction reads is determined by ```--overlap```, with a default of 10nt. 
+
+<p align="center">
+<img src="./readme/junctionReads.png" width="50%" height="50%">
+</p>
+
+The HITindex and generative model probabilities are calculated for metaexons that have a minimum number of reads as determined by ```--readnum```, with a default of 2 reads. For datasets with sufficient coverage, we recommend using at least 5 reads.
+
+Bootstrapping is used to calculate two different statistical metrics related to the HITindex metric. The number of bootstrap iterations used is determined by ```--bootstrap```, with a default of 1000 runs. This is the rate-limiting step for the HITindex pipeline, so we recommend running this step once and then using the output to fine-tune exon classification and PSI quantification. Reducing the the bootstrap n will increase speed, but decrease statistical confidence.
+
+To only calculate HITindex metrics and run the generative model:
+```
+python HITindex_classify.py --HITindex --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand --bed metaexon.bed --overlap 10 --readnum 5 --bootstrap 1000 --outname sampleHITindex
+```
+
+This step results in a ```.exon``` file with the following columns:
+
+| Column Name | Description |
+| ----------- | ----------- |
+| exon | exon name, with coordinates of metaexon |
+| gene   | gene name (from GTF file) |
+| strand | strand |
+| nTXPT | total number of annotated isoforms for the gene |
+| nFE, nINTERNAL, nLE, nSINGLE | number of times constituent exons of this metaexon are annotated as first, internal, or last exons, or appear as a single exon isoform |
+| nUP, nDOWN | number of upstream and downstream splice junction reads |
+| HITindex | HITindex
+| boot_pval | bootstrapping p-value, indicating probability of observing, at random, value within 0.1 of true HITindex |
+| CI75_low, CI75_high | 75% confidence intervals, using bootstrapped iterations |
+| CI90_low, CI90_high | 90% confidence intervals, using bootstrapped iterations |
+| CI95_low, CI95_high | 95% confidence intervals, using bootstrapped iterations |
+| dist_to_TSS | metaexon distance to upstream most expressed exon |
+| dist_to_TES | metaexon distance to downstream most expressed exon |
+| edge | flag indicating whether metaexon is likely to be influenced by edge effects |
+| PofF, PofI, PofL | generative model posterior probabilities for first, internal, and last exon classifications |
+| PofFI, PofIL | generative model posterior probabilities for hybrid exon classifications | 
+| downstream_fraction | |
+| FIL_postmean | |
+
+A sample ```.exon``` file:
+```
+```
+
+
+#### Step 4: Exon Classification
+
+
+
+#### Step 5: Exon Quantification
 - edge effect
 
 ## Fine-tuning Exon Classifications
