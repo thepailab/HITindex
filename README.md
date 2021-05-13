@@ -315,8 +315,8 @@ prob_high	0.8
 **Output**
 
 This step adds two columns to the existing ```.exon``` file: </br>
-(1) ID, the exon-type classification </br>
-(2) ID_position, the exon-type classification after accounting for potential edge effect exons
+(1) ```ID``` the exon-type classification </br>
+(2) ```ID_position``` the exon-type classification after accounting for potential edge effect exons
 
 Users can run this step multiple times with varying thresholds, but since the original file is modified, we suggest duplicating the ```.exon``` file for each set of thresholds and then specifying the new ```.exon``` files with ```--metrics```. 
 
