@@ -201,7 +201,7 @@ Three bed files are output: </br>
 (2) Boundaries defined by the user-defined buffer regions 
 (3) Associating metaexon names with the coordinates of the constitutent overlapping exons that were combined to create the metaexon 
 
-The 4th "name" column of all three bed files will include the original metaexon coordinates, the gene name (from the gtf), and a 'TXPT' annotation, which is the total number of isoforms for that gene. The first two bed files include additional information in the 4th column about how many times the constituent exons are first (FE), internal, or last exons (LE) within annotated isoforms from the gtf file (or appear as single exon isoforms), as shown here:
+The 4th "name" column of all three bed files will include the original metaexon coordinates, the gene name (from the gtf), and a 'TXPT' annotation, which is the total number of isoforms for that gene. The first two bed files include additional information in the 4th column about how many times the constituent exons are first (FE), internal, or last exons (LE) within annotated isoforms from the gtf file (or appear as single exon isoforms), as shown below. For this example, the 4th column will include ```TXPT:3```, because there are 3 isoforms in the toy gene.
 
 <p align="center">
 <img src="./readme/annotations.png" width="75%" height="75%">
