@@ -9,6 +9,8 @@ from os.path import isfile, join
 import gzip
 import getopt
 import re
+import math
+import random
 import pysam
 import pybedtools
 import numpy as np
@@ -138,7 +140,7 @@ def getExonReads(juncbam, overlap):
 
 ##### HIT INDEX FUNCTION #####
 
-def calculateMetric(beddict, startdict, enddict, n_boot, readnum):
+def calculateMetric(beddict, startdict, enddict, readnum):
 	#rows = []
 	count = 0
 	print("HIT for exons...",end='', flush=True)
@@ -163,72 +165,14 @@ def calculateMetric(beddict, startdict, enddict, n_boot, readnum):
 			# calculate metric
 			nright = len(startreads_only)
 			nleft = len(endreads_only)
-			HITindex = -2
+			HITindex = -2.0
 			#if nright > 0 or nleft > 0:
 			if nright + nleft > readnum:
 				HITindex =  round(float(nleft - nright)/float(nright + nleft), 3)
-			# initialize variables
-			pval = -1
-			CI75_low = -2
-			CI75_high = -2
-			CI90_low = -2
-			CI90_high = -2
-			CI95_low = -2
-			CI95_high = -2
-			bootAFE = -2
-			bootALE = -2
-			# bootstrap for within 0.1 of metric
-			allreads = startreads_only + endreads_only
-			# if meets threshold, then calculate
-			if len(allreads) > readnum:
-				n_outside = 0
-				HITlow = HITindex - 0.1
-				HIThigh = HITindex + 0.1
-				bootHITs = []
-				for boot in range(0, n_boot):
-					nchoice = list(np.random.choice(allreads, len(allreads), replace=True))
-					# nchoice_right = [k for k in nchoice if k in startreads_only]
-					# nchoice_left = [k for k in nchoice if k in endreads_only]
-					# collections
-					counter = collections.Counter(nchoice)
-					nchoice_right = sum(counter[v] for v in set(startreads_only))
-					nchoice_left = sum(counter[v] for v in set(endreads_only))
-					HIThere = -2
-					if nchoice_right > 0 or nchoice_left > 0:
-						HIThere = round(float(nchoice_left - nchoice_right) / float(nchoice_right + nchoice_left), 3)
-						bootHITs.append(HIThere)
-					if HIThere < HITlow or HIThere > HIThigh:
-						n_outside = n_outside + 1
-				pval = round(float(n_outside) / float(n_boot), 3)
-				## calculate 75% confidence intervals
-				CI75_low = round(np.percentile(bootHITs, 12.5), 3)
-				CI75_high = round(np.percentile(bootHITs, 87.5), 3)
-				## calculate 90% confidence intervals
-				CI90_low = round(np.percentile(bootHITs, 5), 3)
-				CI90_high = round(np.percentile(bootHITs, 95), 3)
-				## calculate 95% confidence intervals
-				CI95_low = round(np.percentile(bootHITs, 2.5), 3)
-				CI95_high = round(np.percentile(bootHITs, 97.5), 3)
-				## binomial proportion 95% CI 
-				bootsuccess = [i for i in bootHITs if i > -2]
-				## AFE
-				#nAFE = float(len([i for i in bootsuccess if i <= AFEcutoff]))/float(len(bootsuccess))
-				#if nAFE > 0.0 and nAFE < 1.0:
-				#    bootAFE = round(1.96 * np.sqrt((nAFE*(1-nAFE))/float(len(bootsuccess))), 3)
-				## AFE
-				#nALE = float(len([i for i in bootsuccess if i >= ALEcutoff]))/float(len(bootsuccess))
-				#if nALE > 0.0 and nALE < 1.0:
-				#    bootALE = round(1.96 * np.sqrt((nALE*(1-nALE))/float(len(bootsuccess))), 3)
-			# save reads + HIT info
 			beddict[gene][exon]['name'] = exonname
 			beddict[gene][exon]['nleft'] = nleft
 			beddict[gene][exon]['nright'] = nright
 			beddict[gene][exon]['HIT'] = HITindex
-			beddict[gene][exon]['pval'] = pval
-			beddict[gene][exon]['CI'] = [CI75_low, CI75_high, CI90_low, CI90_high, CI95_low, CI95_high]
-			#beddict[gene][exon]['bootpval'] = [bootAFE, bootALE]
-		# save just reads for gen model (if meets read criteria)
-			#if HITindex > -2: rows.append([exonname, gene, exon, nright, nleft + nright])
 	print(str(count)+".")
 	#df = pd.DataFrame(rows, columns=["name","gene","exon","nRIGHT","nTOTAL"])
 	#return(beddict, df)
@@ -285,7 +229,7 @@ def estimate_q(probs, D, N, k_I, mesh = 1000):
 def running_genmodel(exon_outname):
 	df_exon = pd.read_csv(exon_outname, sep='\t')
 	D = df_exon['nDOWN'].values
-	N = (df_exon['nUP'] + df_exon['nRIGHT']).values
+	N = (df_exon['nUP'] + df_exon['nDOWN']).values
 
 	#with pm.Model() as model:
 	#	# modes for each clas of metaexons held as constants
@@ -409,8 +353,7 @@ def edge_flagging(HITdict):
 
 def writeMetrics(HITdict, param, outname):
     outexon = open(outname, 'w')
-    #outexon.write('exon\tgene\tstrand\tnTXPT\tnFE\tnINTERNAL\tnLE\tnSINGLE\tnLEFT\tnRIGHT\tHITindex\tboot_pval\tCI75_low\tCI75_high\tCI90_low\tCI90_high\tCI95_low\tCI95_high\tPofF\tPofI\tPofL\tPofFI\tPofIL\tHIT_postmean\tdist_to_TSS\tedge\n')
-    outexon.write('exon\tgene\tstrand\tnTXPT\tnFE\tnINTERNAL\tnLE\tnSINGLE\tnUP\tnDOWN\tHITindex\tboot_pval\tCI75_low\tCI75_high\tCI90_low\tCI90_high\tCI95_low\tCI95_high\tdist_to_TSS\tdist_to_TES\tedge\n')
+    outexon.write('exon\tgene\tstrand\tnTXPT\tnFE\tnINTERNAL\tnLE\tnSINGLE\tnUP\tnDOWN\tHITindex\tdist_to_TSS\tdist_to_TES\tedge\n')
     for gene in HITdict:
     	for exon in HITdict[gene].keys():
     		if HITdict[gene][exon]['HIT'] == -2: continue
@@ -423,10 +366,7 @@ def writeMetrics(HITdict, param, outname):
     		outexon.write(exon +'\t'+ gene +'\t'+ HITdict[gene][exon]['strand'] +'\t'+ '\t'.join(infolist) +'\t'+ 
     			str(HITdict[gene][exon]['nleft']) +'\t'+ str(HITdict[gene][exon]['nright']) +'\t'+ \
     			# HIT index
-    			str(HITdict[gene][exon]['HIT']) +'\t'+ str(HITdict[gene][exon]['pval']) +'\t'+ \
-    			str(HITdict[gene][exon]['CI'][0]) +'\t'+ str(HITdict[gene][exon]['CI'][1]) +'\t'+ \
-    			str(HITdict[gene][exon]['CI'][2]) +'\t'+ str(HITdict[gene][exon]['CI'][3]) +'\t'+ \
-    			str(HITdict[gene][exon]['CI'][4]) +'\t'+ str(HITdict[gene][exon]['CI'][5]) +'\t'+ 
+    			str(HITdict[gene][exon]['HIT']) +'\t'+ \
     			#str(HITdict[gene][exon]['bootpval'][0]) +'\t'+ str(HITdict[gene][exon]['bootpval'][1]) + \
     			# edge flag
     			str(HITdict[gene][exon]['startdistance']) +'\t'+ str(HITdict[gene][exon]['enddistance']) +'\t'+ edge +'\n')
@@ -449,6 +389,65 @@ def readParameters(parameters):
 		# keys: HITterminal, HIThybrid, HITpval, HIT_CI, prob_med, prob_high
 	return(paramdict)
 
+def probabilistic_round(x):
+    return int(math.floor(x + random.random()))
+
+def sampleReads(allreads, nBOTH):
+	nchoice = np.array(np.random.choice(allreads, nBOTH, replace=True))
+	nchoice_up = np.sum(nchoice < 0)
+	nchoice_down = np.sum(nchoice > 0)
+	HIT = round(float(nchoice_up - nchoice_down) / float(nBOTH), 3)
+	return(HIT)
+
+def bootstrap(exon, n_boot, cutoff):
+	nBOTH = int(exon.nUP) + int(exon.nDOWN)
+	### bootstrap from null internal
+	# create upstream "reads": negative numbers
+	nUP_internal = probabilistic_round(nBOTH/2)
+	up_internal = list(range((nUP_internal+1)*-1,0))
+	# create downstream "reads": positive numbers
+	nDOWN_internal = probabilistic_round(nBOTH/2)
+	down_internal = list(range(1,(nDOWN_internal+2)))
+	### bootstrap from confidence interval
+	up_CI = list(range((int(exon.nUP)+1)*-1, 0))
+	down_CI = list(range(1,(int(exon.nDOWN) + 2)))
+	# all reads
+	allreads_internal = up_internal + down_internal
+	allreads_CI = up_CI + down_CI
+	# get bootstrapped HITindices
+	bootHITs_internal = []
+	bootHITs_CI = []
+	for boot in range(0, n_boot): 
+		bootHITs_internal.append(sampleReads(allreads_internal, nBOTH))
+		bootHITs_CI.append(sampleReads(allreads_CI, nBOTH))
+	bootHITs_internal = np.array(bootHITs_internal)
+	bootHITs_CI = np.array(bootHITs_CI)
+	# calculate p-value - INTRON
+	if float(exon.HITindex) == 0.0:
+		pval_internal = np.sum(np.abs(bootHITs_internal) > 0.0) / float(n_boot)
+	if float(exon.HITindex < 0.0):
+		pval_internal = np.sum(bootHITs_internal <= exon.HITindex) / float(n_boot)
+	if float(exon.HITindex) > 0.0:
+		pval_internal = np.sum(bootHITs_internal >= exon.HITindex) / float(n_boot)
+	# calculate CIs
+	## calculate 75% confidence intervals
+	CI75 = str(round(np.percentile(bootHITs_CI, 12.5), 3)) +','+ str(round(np.percentile(bootHITs_CI, 87.5), 3))
+	## calculate 90% confidence intervals
+	CI90 = str(round(np.percentile(bootHITs_CI, 5), 3)) +','+ str(round(np.percentile(bootHITs_CI, 95), 3))
+	## calculate 95% confidence intervals
+	CI95 = str(round(np.percentile(bootHITs_CI, 2.5), 3)) +','+ str(round(np.percentile(bootHITs_CI, 97.5), 3))
+	# calculate p-value - CI
+	pval_CI = np.sum(np.abs(bootHITs_CI) < abs(cutoff)) / float(n_boot)
+	# return
+	return CI75, CI90, CI95, pval_CI, pval_internal
+
+def significance(HITcombo, n_boot, cutoff):
+	HITcombo[['CI_75', 'CI_90', 'CI_95', 'pval_CI', 'pval_internal']] = HITcombo[['nUP', 'nDOWN', 'HITindex']].apply(bootstrap, axis=1, result_type="expand", n_boot=n_boot, cutoff=cutoff)
+	#HITcombo['pval_IntronNull'] = HITcombo[['nUP', 'nDOWN', 'HITindex']].apply(bootIntronNull, axis=1, n_boot=n_boot)
+	#HITcombo[['CI_75', 'CI_90', 'CI_95', 'pval_CI']] = HITcombo[['nUP','nDOWN']].apply(bootCI, axis=1, result_type="expand", n_boot=n_boot, cutoff=cutoff)
+	HITcombo.to_csv(outname, sep='\t', index=False)	
+	return(HITcombo)
+
 def call_terminal(HITcombo, paramdict, outname):
 	# set all to internal
 	HITcombo['ID'] = "internal"
@@ -461,14 +460,13 @@ def call_terminal(HITcombo, paramdict, outname):
 	# IL_high
 	HITcombo.loc[(HITcombo.ID == 'InternalLast_medium') & (HITcombo.PofFI >= float(paramdict['prob_high'])), 'ID'] = 'InternalLast_high'
 	# first
-	HITcombo.loc[(HITcombo.HITindex <= float(paramdict['HITterminal'])*-1) & (HITcombo.boot_pval <= float(paramdict['HITpval'])), 'ID'] = 'first'
+	HITcombo.loc[(HITcombo.HITindex <= float(paramdict['HITterminal'])*-1) & (HITcombo.pval_internal <= float(paramdict['HITpval'])), 'ID'] = 'first'
 	# last
-	HITcombo.loc[(HITcombo.HITindex >= float(paramdict['HITterminal'])) & (HITcombo.boot_pval <= float(paramdict['HITpval'])), 'ID'] = 'last'
+	HITcombo.loc[(HITcombo.HITindex >= float(paramdict['HITterminal'])) & (HITcombo.pval_internal <= float(paramdict['HITpval'])), 'ID'] = 'last'
 	# confidence intervals
 	if paramdict['HIT_CI'] != 'none':
-		CInameLOW = 'CI' + str(paramdict['HIT_CI']) +'_low'
-		CInameHIGH = 'CI' + str(paramdict['HIT_CI']) +'_high'
-		HITcombo.loc[(HITcombo[CInameLOW] < 0) & (HITcombo[CInameHIGH] > 0), 'ID'] = 'internal'
+		CIname = 'CI' + str(paramdict['HIT_CI'])
+		HITcombo.loc[(HITcombo[CIname].split(',')[0] < 0) & (HITcombo[CIname].split(',')[1] > 0), 'ID'] = 'internal'
 	# add new column with assignments based on position in gene
 	HITcombo['ID_position'] = HITcombo['ID'] 
 	# first if upstream most exon
@@ -491,7 +489,7 @@ def calculatePSI(HITidentify, edge, outname):
 	# list of all genes
 	genelist = HITidentify.gene.unique()
 	for genehere in genelist:
-		print(genehere)
+		#print(genehere)
 		dfhere = HITidentify.loc[HITidentify.gene == genehere]
 		# get exons
 		afehere = dfhere.loc[(dfhere.ID == 'first') | (dfhere.ID == 'FirstInternal_medium') | (dfhere.ID == 'FirstInternal_high')]
@@ -548,11 +546,11 @@ if __name__ == '__main__':
 	group_param = parser.add_argument_group('HITindex', 'parameters for running HIT index')
 	group_param.add_argument('--overlap', type = int, metavar='', help = 'overlap of split read with exon region (nt)', required = False, default = 10)
 	group_param.add_argument('--readnum', type = int, metavar='', help = 'minimum number of reads for confidence in HITindex (sum of R + L)', required = False, default = 2)
-	group_param.add_argument('--bootstrap', type = int, metavar='', help = 'bootstrapping iterations to get p-value for metric confidence (within 0.1)', required = False, default = 1000)
 	### thresholds for calling terminal exons
 	group_term = parser.add_argument_group('classify', 'information for classifying exon types') 
 	group_term.add_argument('--metrics', metavar='', type = str, help = 'HITindex output file, required if --HITindex is not specified.', required = False, default = "None")
 	group_term.add_argument('--parameters', metavar='', type = str, help = 'file specifying HITindex and generative model thresholds for classifying exons.', required=False, default="HIT_identity_parameters.txt")
+	group_term.add_argument('--bootstrap', type = int, metavar='', help = 'bootstrapping iterations to get confidence intervals and p-values', required = False, default = 1000)
 	### PSI values
 	group_psi = parser.add_argument_group('psi', 'parameters for calling PSI values')
 	group_psi.add_argument('--metricsID', type = str, metavar='', help = 'HITindex identification output file, required if --classify is not specified.', required = False, default = "None")
@@ -586,7 +584,7 @@ if __name__ == '__main__':
 		print("... got junctions...")
 		startdict, enddict = getExonReads(args.juncbam, args.overlap)
 		print("... got counts...")
-		HITdict = calculateMetric(beddict, startdict, enddict, args.bootstrap, args.readnum)
+		HITdict = calculateMetric(beddict, startdict, enddict, args.readnum)
 		print("... HITindex calculated.")
 		HITdict, param = edge_flagging(HITdict)
 		print("... edge effect exons flagged.")
@@ -605,7 +603,11 @@ if __name__ == '__main__':
 			exon_outname = args.metrics
 		print("Classifying exons...")
 		HITcombo = readMetrics(exon_outname)
+		print("...read exons.")
 		paramdict = readParameters(args.parameters)
+		print("...read parameters.")
+		HITcombo = significance(HITcombo, args.bootstrap, float(paramdict['HIThybrid']))
+		print("...calculated significance.")
 		HITidentify = call_terminal(HITcombo, paramdict, exon_outname)
 		print("... exons identified.")
 
