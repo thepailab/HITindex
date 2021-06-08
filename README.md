@@ -67,7 +67,7 @@ Calculate HIT index metrics and classify metaexons into one of 5 exon-types: fir
 usage: HITindex_classify.py [-h] [--junctionReads] [--HITindex] [--identifyTerminal] [--calculatePSI] 
                                   --outname output [--bam] [--juncbam] [--readtype {single,paired}]
                                  [--readstrand {fr-unstrand,fr-firststrand,fr-secondstrand}] [--bed] [--overlap]
-                                 [--readnum] [--bootstrap] [--metrics] [--parameters] [--metricsID] [--edge]
+                                 [--readnum] [--metrics] [--parameters] [--bootstrap] [--metricsID] [--edge]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -97,8 +97,6 @@ HITindex:
   --overlap             overlap of split read with exon region (nt) (default: 10)
   --readnum             minimum number of reads for confidence in HITindex (sum of R + L) (default:
                         2)
-  --bootstrap           bootstrapping iterations to get p-value for metric confidence (within 0.1)
-                        (default: 1000)
 
 classify:
   information for identifying exon types
@@ -107,6 +105,8 @@ classify:
                         None)
   --parameters          file specifying HITindex and generative model thresholds for classifying
                         exons. (default: HIT_identity_parameters.txt)
+  --bootstrap           bootstrapping iterations to get confidence intervals and p-values
+                        (default: 1000)
 
 psi:
   parameters for calling PSI values
@@ -272,7 +272,7 @@ This step results in bam files containing only the junction reads, named using `
 
 To only calculate HITindex metrics and run the generative model:
 ```
-python HITindex_classify.py --HITindex --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand --bed metaexon.bed_ss3-20ss5-50.buffer  --overlap 10 --readnum 5 --bootstrap 1000 --outname sampleHITindex
+python HITindex_classify.py --HITindex --juncbam sample.sorted.junctions.bam --readtype paired --readstrand fr-firststrand --bed metaexon.bed_ss3-20ss5-50.buffer  --overlap 10 --readnum 5 --outname sampleHITindex
 ```
 
 Junction reads are assigned to metaexons based on their overlap with the upstream or downstream boundaries of the metaexon. Note that the junction site does not need to be directly aligned with the exact metaexon boundary coordinates and junction reads are counted regardless of the identity of the connected exon. The minimum overlap length for junction reads is determined by ```--overlap```, with a default of 10nt. 
@@ -282,10 +282,6 @@ Junction reads are assigned to metaexons based on their overlap with the upstrea
 </p>
 
 The HITindex and generative model probabilities are calculated for metaexons that have a minimum number of reads as determined by ```--readnum```, with a default of 2 reads. For datasets with sufficient coverage, we recommend using at least 5 reads.
-
-**Bootstrapping**
-
-Bootstrapping is used to calculate two different statistical metrics related to the HITindex metric. The number of bootstrap iterations used is determined by ```--bootstrap```, with a default of 1000 runs. This is the rate-limiting step for the HITindex pipeline, so we recommend running this step once and then using the output to fine-tune exon classification and PSI quantification. Reducing the bootstrap n will increase speed, but decrease statistical confidence.
 
 **Output**
 
@@ -300,23 +296,19 @@ This step results in a ```.exon``` file with the following columns:
 | nFE, nINTERNAL, nLE, nSINGLE | number of times constituent exons of this metaexon are annotated as first, internal, or last exons, or appear as a single exon isoform |
 | nUP, nDOWN | number of upstream and downstream splice junction reads |
 | HITindex | HITindex
-| boot_pval | bootstrapping p-value, indicating probability of observing, at random, value within 0.1 of true HITindex |
-| CI75_low, CI75_high | 75% confidence intervals, using bootstrapped iterations |
-| CI90_low, CI90_high | 90% confidence intervals, using bootstrapped iterations |
-| CI95_low, CI95_high | 95% confidence intervals, using bootstrapped iterations |
 | dist_to_TSS | metaexon distance to upstream most expressed exon |
 | dist_to_TES | metaexon distance to downstream most expressed exon |
 | edge | flag indicating whether metaexon is likely to be influenced by edge effects |
 | PofF, PofI, PofL | generative model posterior probabilities for first, internal, and last exon classifications |
 | PofFI, PofIL | generative model posterior probabilities for hybrid exon classifications | 
 | downstream_fraction | |
-| FIL_postmean | |
+| HIT_postmean | |
 
 ### Step 4: Exon Classification
 
 To only classify exons:
 ```
-python HITindex_classify.py --classify  --metrics sampleHITindex.exon --paramters HIT_identity_parameters.txt
+python HITindex_classify.py --classify  --metrics sampleHITindex.exon --paramters HIT_identity_parameters.txt --bootstrap 1000 
 ```
 
 Exons are classified using the ```.exon``` file output from the last step and the included ```HIT_identity_parameters.txt``` file (reproduced below), which defines the thresholds used across the HITindex metric, statistical confidence metrics, and posterior probabilities from the generative model that are used to classify exons. Users can change these thresholds by changing the values in the ```HIT_identify_parameters.txt``` or create custom files with the same format. Custom files can be specified using ```--parameters```.
@@ -337,11 +329,22 @@ prob_med	0.5
 prob_high	0.8
 ```
 
+**Bootstrapping**
+
+Bootstrapping is used to calculate a confidence interval and two different p-values related to the HITindex metric. The number of bootstrap iterations used is determined by ```--bootstrap```, with a default of 1000 runs. This is the rate-limiting step for the HITindex pipeline, where reducing the bootstrap n will increase speed, but decrease statistical confidence.
+
 **Output**
 
-This step adds two columns to the existing ```.exon``` file: </br>
-(1) ```ID``` the exon-type classification </br>
-(2) ```ID_position``` the exon-type classification after accounting for potential edge effect exons
+This step adds 7 columns to the existing ```.exon``` file: </br>
+| Column Name | Description |
+| ----------- | ----------- |
+| CI_75 | 75% confidence intervals [low,high], using bootstrapped iterations |
+| CI_90 | 90% confidence intervals [low,high], using bootstrapped iterations |
+| CI_95 | 95% confidence intervals [low,high], using bootstrapped iterations |
+| pval_CI | bootstrapping p-value, indicating probability that the confidence interval overlaps the internal exon distribution |
+| pval_internal | bootstrapping p-value, indicating probability of observing an internal exon with the same or more extreme HITindex |
+| ID | the exon-type classification
+| ID_position | the exon-type classification after accounting for potential edge effect exons
 
 Users can run this step multiple times with varying thresholds, but since the original file is modified, we suggest duplicating the ```.exon``` file for each set of thresholds and then specifying the new ```.exon``` files with ```--metrics```. 
 
