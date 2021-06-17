@@ -458,7 +458,7 @@ def call_terminal(HITcombo, paramdict, outname):
 	# IL_med
 	HITcombo.loc[(HITcombo.HITindex >= float(paramdict['HIThybrid'])) & (HITcombo.PofIL >= float(paramdict['prob_med'])), 'ID'] = 'InternalLast_medium'
 	# IL_high
-	HITcombo.loc[(HITcombo.ID == 'InternalLast_medium') & (HITcombo.PofFI >= float(paramdict['prob_high'])), 'ID'] = 'InternalLast_high'
+	HITcombo.loc[(HITcombo.ID == 'InternalLast_medium') & (HITcombo.PofIL >= float(paramdict['prob_high'])), 'ID'] = 'InternalLast_high'
 	# first
 	HITcombo.loc[(HITcombo.HITindex <= float(paramdict['HITterminal'])*-1) & (HITcombo.pval_internal <= float(paramdict['HITpval'])), 'ID'] = 'first'
 	# last
