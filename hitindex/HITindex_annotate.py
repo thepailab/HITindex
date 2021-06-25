@@ -85,7 +85,7 @@ def annotateGenes(genedict, reverse, outfile, ss3buffer, ss5buffer):
         for ex in bedlist:
             exhere = ex.split('\t')
             exherename = exhere[0] +':'+ exhere[1] +'-'+ exhere[2]
-            extypes = exhere[4].split(',')
+            extypes = exhere[3].split(',')
             ntypeset = []
             # count types of exons
             for x in exontypes:
@@ -104,7 +104,7 @@ def annotateGenes(genedict, reverse, outfile, ss3buffer, ss5buffer):
         for ex in bedlist_const:
             exhere = ex.split('\t')
             exherename = exhere[0] +':'+ exhere[1] +'-'+ exhere[2]
-            exactual = exhere[4]
+            exactual = exhere[3]
             outfhconst.write(chr +'\t'+ exhere[1] +'\t'+ exhere[2] +'\t'+ exherename +';'+ genesymbol +';'+ ntxpt +';'+ exactual +'\t0\t'+ strand +'\n')
             
     outfh.close()
@@ -131,5 +131,5 @@ if __name__ == '__main__':
 
     print('Indexing gtf...')
     genedict = getGenes(args.gtf)
-    annotateGenes(genedict, args.reverse, args.outfile_gtf, args.ss3buffer, args.ss5buffer)
+    annotateGenes(genedict, args.reverse, args.outfile, args.ss3buffer, args.ss5buffer)
     print('... gtf indexed.')
