@@ -441,12 +441,12 @@ def bootstrap(exon, n_boot, cutoff):
 	# return
 	return CI75, CI90, CI95, pval_CI, pval_internal
 
-def significance(HITcombo, n_boot, cutoff):
+def significance(HITcombo, n_boot, cutoff, outname):
 	HITcombo[['CI_75', 'CI_90', 'CI_95', 'pval_CI', 'pval_internal']] = HITcombo[['nUP', 'nDOWN', 'HITindex']].apply(bootstrap, axis=1, result_type="expand", n_boot=n_boot, cutoff=cutoff)
 	#HITcombo['pval_IntronNull'] = HITcombo[['nUP', 'nDOWN', 'HITindex']].apply(bootIntronNull, axis=1, n_boot=n_boot)
 	#HITcombo[['CI_75', 'CI_90', 'CI_95', 'pval_CI']] = HITcombo[['nUP','nDOWN']].apply(bootCI, axis=1, result_type="expand", n_boot=n_boot, cutoff=cutoff)
 	HITcombo.to_csv(outname, sep='\t', index=False)	
-	return(HITcombo)
+	return HITcombo
 
 def call_terminal(HITcombo, paramdict, outname):
 	# set all to internal
@@ -475,7 +475,7 @@ def call_terminal(HITcombo, paramdict, outname):
 	HITcombo.loc[(HITcombo.dist_to_TES == 0), 'ID_position'] = 'last'
 	# write file to csv
 	HITcombo.to_csv(outname, sep='\t', index=False)	
-	return()
+	#return()
 
 ##### CALCULATE PSI #####
 
@@ -606,7 +606,7 @@ if __name__ == '__main__':
 		print("...read exons.")
 		paramdict = readParameters(args.parameters)
 		print("...read parameters.")
-		HITcombo = significance(HITcombo, args.bootstrap, float(paramdict['HIThybrid']))
+		HITcombo = significance(HITcombo, args.bootstrap, float(paramdict['HIThybrid']), exon_outname)
 		print("...calculated significance.")
 		HITidentify = call_terminal(HITcombo, paramdict, exon_outname)
 		print("... exons identified.")
