@@ -308,7 +308,7 @@ This step results in a ```.exon``` file with the following columns:
 
 To only classify exons:
 ```
-python HITindex_classify.py --classify  --metrics sampleHITindex.exon --paramters HIT_identity_parameters.txt --bootstrap 1000 
+python HITindex_classify.py --classify  --metrics sampleHITindex.exon --parameters HIT_identity_parameters.txt --bootstrap 1000 
 ```
 
 Exons are classified using the ```.exon``` file output from the last step and the included ```HIT_identity_parameters.txt``` file (reproduced below), which defines the thresholds used across the HITindex metric, statistical confidence metrics, and posterior probabilities from the generative model that are used to classify exons. Users can change these thresholds by changing the values in the ```HIT_identify_parameters.txt``` or create custom files with the same format. Custom files can be specified using ```--parameters```.
